@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SOMNIQ — Glass Depth · Full App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #050505; color: #fff; font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  ion-icon { display: inline-flex; }
+  body {
+    background:
+      radial-gradient(ellipse 1200px 800px at 20% 0%, rgba(124,58,237,0.08), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 80% 100%, rgba(34,211,238,0.06), transparent 60%),
+      #050505;
+  }
+  .stage {
+    min-height: 100vh; padding: 56px 32px 80px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .header {
+    text-align: center; margin-bottom: 40px;
+    max-width: 720px;
+  }
+  .header h1 {
+    font-size: 36px; font-weight: 800; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .header p { color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.6; }
+  .nav-pills {
+    display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px; padding: 5px; margin-bottom: 32px;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  }
+  .nav-pill {
+    padding: 8px 16px; border-radius: 100px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.5); font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  .nav-pill:hover { color: rgba(255,255,255,0.85); }
+  .nav-pill.active {
+    background: linear-gradient(135deg, #a78bfa, #22d3ee);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(167,139,250,0.4);
+  }
+  .frame-grid {
+    display: flex; flex-wrap: wrap; gap: 36px; justify-content: center;
+    padding: 20px 0;
+  }
+  .frame-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .frame-cell .label {
+    font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.5); text-transform: uppercase;
+  }
+  .single-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+  }
+  .single-cell .label {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+    color: rgba(255,255,255,0.6);
+  }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0a0a14"/>
+    <circle cx="50" cy="50" r="20" fill="none" stroke="#a78bfa" stroke-width="3"/>
+    <path d="M56 42 a11 11 0 1 0 2 16 a9 9 0 0 1 -2 -16 z" fill="#22d3ee"/>
+  </svg>
+</template>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="somniq-system.jsx"></script>
+<script type="text/babel" src="screen-dashboard.jsx"></script>
+<script type="text/babel" src="screen-track.jsx"></script>
+<script type="text/babel" src="screen-energy.jsx"></script>
+<script type="text/babel" src="screen-insights.jsx"></script>
+<script type="text/babel" src="screen-profile.jsx"></script>
+<script type="text/babel" src="screen-login-report.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState } = React;
+
+// View modes — single phone with nav, OR all-screens grid
+const SCREENS = [
+  { id: 'login', label: 'Login', Comp: window.Login },
+  { id: 'dashboard', label: 'Agent', Comp: window.Dashboard },
+  { id: 'track-idle', label: 'Track', Comp: window.TrackIdle },
+  { id: 'track-rec', label: 'Recording', Comp: window.TrackRec },
+  { id: 'report', label: 'Report', Comp: window.Report },
+  { id: 'insights', label: 'Insights', Comp: window.Insights },
+  { id: 'energy', label: 'Energy', Comp: window.Energy },
+  { id: 'profile', label: 'Profile', Comp: window.Profile },
+];
+
+const Phone = ({ children, label, scale = 1 }) => {
+  const W = 390, H = 844;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: W * scale, height: H * scale, position: 'relative' }}>
+        <div style={{
+          transform: `scale(${scale})`, transformOrigin: 'top left',
+          width: W, height: H, position: 'absolute', top: 0, left: 0,
+        }}>
+          <window.IOSDevice width={W} height={H} dark>
+            {children}
+          </window.IOSDevice>
+        </div>
+      </div>
+      {label && <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{label}</div>}
+    </div>
+  );
+};
+
+const App = () => {
+  const [mode, setMode] = useState('single'); // single | grid
+  const [active, setActive] = useState('dashboard');
+
+  const navigate = (id) => {
+    // map app screen ids to our screen list
+    const map = {
+      login: 'login', dashboard: 'dashboard',
+      track: 'track-idle', 'track-rec': 'track-rec',
+      report: 'report', insights: 'insights',
+      energy: 'energy', profile: 'profile',
+    };
+    setActive(map[id] || id);
+  };
+
+  const renderScreen = (screenId) => {
+    const screen = SCREENS.find(s => s.id === screenId);
+    if (!screen || !screen.Comp) {
+      return <div style={{padding: 40, color: '#fff'}}>Screen "{screenId}" not loaded</div>;
+    }
+    const C = screen.Comp;
+
+    let inner;
+    if (screenId === 'login') {
+      inner = <C onContinue={() => setActive('dashboard')} />;
+    } else if (screenId === 'track-idle') {
+      inner = <C onNav={navigate} onStart={() => setActive('track-rec')} />;
+    } else if (screenId === 'track-rec') {
+      inner = <C onNav={navigate} onStop={() => setActive('report')} />;
+    } else {
+      inner = <C onNav={navigate} />;
+    }
+    return (
+      <div key={screenId} style={{
+        width: '100%', height: '100%',
+      }}>{inner}</div>
+    );
+  };
+
+  return (
+    <div className="stage">
+      <div className="header">
+        <h1>SOMNIQ — Glass Depth</h1>
+        <p>Wearable-free sleep tracking · Phone patterns + on-device snoring detection · Aria, your sleep agent</p>
+      </div>
+
+      <div className="nav-pills">
+        <button className={`nav-pill ${mode==='single'?'active':''}`} onClick={() => setMode('single')}>Interactive</button>
+        <button className={`nav-pill ${mode==='grid'?'active':''}`} onClick={() => setMode('grid')}>All Screens</button>
+      </div>
+
+      {mode === 'single' && (
+        <>
+          <div className="nav-pills" style={{ marginBottom: 36 }}>
+            {SCREENS.map(s => (
+              <button key={s.id}
+                className={`nav-pill ${active===s.id?'active':''}`}
+                onClick={() => setActive(s.id)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <Phone>{renderScreen(active)}</Phone>
+        </>
+      )}
+
+      {mode === 'grid' && (
+        <div className="frame-grid">
+          {SCREENS.map(s => (
+            <div key={s.id} data-screen-label={s.label}>
+              <Phone label={s.label} scale={0.55}>{renderScreen(s.id)}</Phone>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
