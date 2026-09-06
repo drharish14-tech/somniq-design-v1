@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Somniq · Convert onboarding preview (PR #28)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #fff;
+    --muted: rgba(255,255,255,0.55);
+    --faint: rgba(255,255,255,0.35);
+    --hairline: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.1);
+    --violet: #a78bfa;
+    --cyan: #22d3ee;
+    --pink: #ec4899;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --glass-top: rgba(255,255,255,0.08);
+    --glass-bot: rgba(255,255,255,0.02);
+    --violet-soft: rgba(167,139,250,0.12);
+    --radius: 22px;
+    --phone-w: 390px;
+    --phone-h: 844px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: #0a0a0c;
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 28px 16px 40px;
+  }
+
+  .chrome {
+    width: min(var(--phone-w), 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .chrome h1 {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--violet);
+    font-weight: 500;
+  }
+  .chrome p {
+    font-size: 12px;
+    color: var(--faint);
+    text-align: right;
+  }
+
+  .phone-shell {
+    width: min(var(--phone-w), 100%);
+    height: min(var(--phone-h), calc(100vh - 120px));
+    max-height: var(--phone-h);
+    border-radius: 40px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--bg);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04),
+      0 40px 80px rgba(0,0,0,0.65),
+      0 0 120px rgba(167,139,250,0.12);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .aurora {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .aurora .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    animation: drift 14s ease-in-out infinite alternate;
+  }
+  .aurora .b1 {
+    width: 280px; height: 280px;
+    background: rgba(167,139,250,0.45);
+    top: -80px; left: -60px;
+  }
+  .aurora .b2 {
+    width: 220px; height: 220px;
+    background: rgba(34,211,238,0.22);
+    top: 180px; right: -90px;
+    animation-delay: -4s;
+  }
+  .aurora .b3 {
+    width: 260px; height: 260px;
+    background: rgba(236,72,153,0.18);
+    bottom: 80px; left: 40px;
+    animation-delay: -7s;
+  }
+  @keyframes drift {
+    from { transform: translate(0,0) scale(1); }
+    to { transform: translate(18px, 24px) scale(1.08); }
+  }
+
+  .status-bar {
+    position: relative;
+    z-index: 2;
+    height: 54px;
+    padding: 16px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .status-bar .icons { display: flex; gap: 6px; opacity: 0.9; font-size: 11px; }
+
+  .frame {
+    position: relative;
+    z-index: 1;
+    height: calc(100% - 54px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top {
+    padding: 4px 24px 0;
+    flex-shrink: 0;
+  }
+  .phase-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 10px;
+  }
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .progress .seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.35s ease;
+  }
+  .progress .seg.done { background: var(--green); }
+  .progress .seg.active { background: var(--violet); }
+
+  .body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 24px 12px;
+    scrollbar-width: none;
+  }
+  .body::-webkit-scrollbar { display: none; }
+
+  .title {
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.56px;
+    line-height: 34px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .phase-panel {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.32s ease, transform 0.32s ease;
+  }
+  .phase-panel.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    position: relative;
+  }
+
+  .glass {
+    background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    opacity: 0.7;
+  }
+  .glass.highlight {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 12px 40px rgba(0,0,0,0.25);
+  }
+  .glass.violet-soft {
+    background: linear-gradient(165deg, rgba(167,139,250,0.16), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02));
+    border-color: rgba(167,139,250,0.28);
+  }
+  .glass.violet {
+    background: linear-gradient(160deg, rgba(167,139,250,0.28), rgba(255,255,255,0.05) 50%, rgba(34,211,238,0.06));
+    border-color: rgba(167,139,250,0.35);
+  }
+
+  .info-card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .info-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .icon-chip {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--violet-soft);
+    border: 1px solid rgba(167,139,250,0.28);
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .info-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .info-body {
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--muted);
+  }
+
+  .mono-eye {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mono-eye.violet { color: var(--violet); }
+  .mono-eye.tight { font-size: 8.5px; letter-spacing: 1.8px; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    border: 1px solid currentColor;
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+  .pill.glow {
+    box-shadow: 0 0 18px color-mix(in srgb, currentColor 35%, transparent);
+  }
+
+  /* Teaser */
+  .brand {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 12px;
+  }
+  .teaser-title {
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: -0.6px;
+    line-height: 36px;
+    margin-bottom: 12px;
+  }
+  .teaser-sub {
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .num-rows { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+  .num-row { display: flex; gap: 12px; align-items: flex-start; }
+  .num-k {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2.2px;
+    color: var(--violet);
+    width: 28px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .num-t { font-weight: 600; font-size: 15px; }
+  .num-d { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 18px; }
+  .fine-wrap { text-align: center; margin-top: 14px; }
+  .fine {
+    font-size: 12px;
+    color: var(--faint);
+    line-height: 18px;
+    margin-top: 8px;
+  }
+
+  /* Analysis checklist */
+  .list-card { padding: 16px; margin-bottom: 12px; }
+  .list-eye { margin-bottom: 12px; color: var(--violet); }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--violet);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s, border 0.3s;
+  }
+  .check-dot.ok {
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(52,211,153,0.8);
+  }
+  .check-dot.miss {
+    background: transparent;
+    border: 1px solid var(--faint);
+  }
+  .check-dot.wait {
+    background: var(--violet);
+    animation: pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.45; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  .check-label { font-size: 14px; flex: 1; }
+  .check-label.miss { color: var(--faint); }
+
+  /* Need hero */
+  .need-hero {
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .need-num-row {
+    display: flex;
+    align-items: baseline;
+  }
+  .need-num {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 58px;
+    letter-spacing: -2.24px;
+    background: linear-gradient(135deg, #fff 20%, var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .need-unit {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+    color: var(--faint);
+    margin-left: 4px;
+  }
+  .need-lead {
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--ink);
+  }
+  .need-lead strong { font-weight: 700; }
+  .reveal-body {
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--muted);
+  }
+  .bridge {
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--muted);
+  }
+  .sample-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--faint);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 3px 8px;
+  }
+
+  /* Debt orb */
+  .debt-hero {
+    padding: 22px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .orb-wrap {
+    width: 170px;
+    height: 170px;
+    position: relative;
+    margin: 6px 0 4px;
+  }
+  .orb-spin {
+    position: absolute;
+    inset: -22px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--violet), var(--cyan), var(--pink), var(--violet));
+    filter: blur(10px);
+    opacity: 0.7;
+    animation: spin 10s linear infinite;
+  }
+  .orb-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--violet), var(--cyan), var(--pink), var(--violet));
+    animation: spin 10s linear infinite;
+    padding: 9px;
+  }
+  .orb-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 24%, rgba(125,211,252,0.28), rgba(255,255,255,0.12) 18%, rgba(20,16,40,0.97) 50%, #07050f 100%);
+    display: grid;
+    place-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .orb-inner::after {
+    content: "";
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    top: 28%; left: 28%;
+    background: radial-gradient(circle, rgba(34,211,238,0.55), transparent 70%);
+    opacity: 0.45;
+  }
+  .orb-label { position: relative; z-index: 2; text-align: center; }
+  .orb-hours {
+    font-family: Inter, sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 56px;
+    letter-spacing: -2.34px;
+    color: #fff;
+    text-shadow: 0 0 18px rgba(167,139,250,0.45);
+  }
+  .orb-hours .u {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+  .orb-eye {
+    font-family: Inter, sans-serif;
+    font-size: 8.5px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: rgba(186,230,253,0.7);
+    margin-top: 7px;
+    font-weight: 500;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .building {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--cyan);
+    line-height: 19px;
+  }
+  .meta {
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  .trend-card { padding: 20px; margin-bottom: 12px; }
+  .section-head { margin-bottom: 4px; }
+  .section-head .eye { margin-bottom: 4px; }
+  .section-head .ht {
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.2px;
+  }
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 80px;
+    margin-top: 10px;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .bar-val {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+  }
+  .debt-bar {
+    width: 100%;
+    border-radius: 4px;
+    opacity: 0.85;
+    min-height: 8px;
+  }
+  .bar-day {
+    font-size: 10px;
+    color: var(--faint);
+  }
+
+  /* Energy Now */
+  .energy-card { padding: 20px; margin-bottom: 8px; }
+  .energy-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .energy-num-row {
+    display: flex;
+    align-items: baseline;
+    margin-top: 2px;
+  }
+  .energy-num {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    font-size: 26px;
+  }
+  .energy-pct {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--faint);
+    margin-left: 1px;
+  }
+  .windows { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .win-row { display: flex; gap: 10px; align-items: flex-start; }
+  .win-rail { width: 12px; display: flex; flex-direction: column; align-items: center; }
+  .win-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .win-line {
+    width: 1px;
+    flex-grow: 1;
+    min-height: 18px;
+    background: var(--hairline);
+    margin-top: 4px;
+  }
+  .win-label { font-weight: 600; font-size: 13px; }
+  .win-tip { font-size: 12px; color: var(--muted); line-height: 17px; margin-top: 2px; }
+
+  /* Offer */
+  .offer-hero {
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .offer-price {
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: -0.8px;
+  }
+  .offer-list { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .footer {
+    flex-shrink: 0;
+    padding: 12px 24px 28px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.72) 28%, rgba(0,0,0,0.92));
+  }
+  .cta {
+    width: 100%;
+    border: none;
+    background: rgba(255,255,255,0.95);
+    color: #000;
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 999px;
+    padding: 15px 18px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .cta:hover { opacity: 0.92; }
+  .cta:active { transform: scale(0.985); }
+  .cta:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .cta.busy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,0.15);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  .skip {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--faint);
+    font-family: Inter, sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .skip.hidden, .skip-spacer.hidden { display: none; }
+  .skip-spacer { height: 14px; }
+
+  .done-toast {
+    position: absolute;
+    left: 20px; right: 20px; bottom: 110px;
+    z-index: 5;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(12,12,16,0.92);
+    border: 1px solid rgba(52,211,153,0.35);
+    color: var(--green);
+    font-size: 13px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .done-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .nav-hint {
+    width: min(var(--phone-w), 100%);
+    font-size: 12px;
+    color: var(--faint);
+    text-align: center;
+    line-height: 18px;
+  }
+  .nav-hint code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 420px) {
+    body { padding: 12px 0 20px; }
+    .phone-shell {
+      width: 100%;
+      height: 100vh;
+      max-height: none;
+      border-radius: 0;
+      border: none;
+    }
+    .chrome, .nav-hint { padding: 0 16px; width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="chrome">
+    <h1>Somniq · Glass Depth</h1>
+    <p>Convert preview · PR #28</p>
+  </div>
+
+  <div class="phone-shell" id="phone">
+    <div class="aurora" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="icons">●●● ▮▮▮</span>
+    </div>
+
+    <div class="frame">
+      <div class="top" id="chromeTop">
+        <div class="phase-label" id="phaseLabel">Teaser · 1 of 8</div>
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="body" id="scrollBody">
+        <!-- 0 Teaser -->
+        <div class="phase-panel active" data-phase="0">
+          <div class="brand">SOMNIQ</div>
+          <div class="teaser-title">See your sleep debt<br />and today’s energy.</div>
+          <p class="teaser-sub">No Watch required. Phone motion and Apple Health (read-only) seed last week — then Energy reads from debt over about 14 nights.</p>
+          <div class="glass highlight num-rows">
+            <div class="num-row"><div class="num-k">01</div><div><div class="num-t">Motion first</div><div class="num-d">Core Motion backfills provisional nights.</div></div></div>
+            <div class="num-row"><div class="num-k">02</div><div><div class="num-t">Health read-only</div><div class="num-d">Sleep, steps, workouts if you have them.</div></div></div>
+            <div class="num-row"><div class="num-k">03</div><div><div class="num-t">Need + debt reveal</div><div class="num-d">Provisional — then a morning refine loop.</div></div></div>
+          </div>
+          <div class="fine-wrap">
+            <span class="pill" style="color:var(--violet)">OPTIONAL SNORE LISTENING</span>
+            <p class="fine">A short quiz. Snore listening stays optional.</p>
+          </div>
+        </div>
+
+        <!-- 1 Motion -->
+        <div class="phase-panel" data-phase="1">
+          <h2 class="title">Allow phone motion</h2>
+          <p class="subtitle">We request about 14 days of pedometer history. iOS typically keeps ~7 — we never invent the rest.</p>
+          <div class="glass highlight info-card">
+            <div class="info-row">
+              <div class="icon-chip">🚶</div>
+              <div>
+                <div class="info-title">Why motion first</div>
+                <div class="info-body">Lookback asks for up to ~14 days. The OS often returns about a week. Not Screen Time. Not unlocks. Not tappigraphy.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Health -->
+        <div class="phase-panel" data-phase="2">
+          <h2 class="title">Connect Apple Health</h2>
+          <p class="subtitle">Read-only: sleep samples, steps, and workouts. We never write guessed nights to Health.</p>
+          <div class="glass highlight info-card">
+            <div class="info-row">
+              <div class="icon-chip">❤️</div>
+              <div>
+                <div class="info-title">Sleep samples</div>
+                <div class="info-body">If Health already has asleep time, we use it first.</div>
+              </div>
+            </div>
+          </div>
+          <div class="glass highlight info-card">
+            <div class="info-row">
+              <div class="icon-chip">👟</div>
+              <div>
+                <div class="info-title">Steps &amp; workouts</div>
+                <div class="info-body">Active hours are marked awake in the step-gap heuristic.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Notifications -->
+        <div class="phase-panel" data-phase="3">
+          <h2 class="title">Wake-up check-in</h2>
+          <p class="subtitle">If Motion guessed last night below 70% confidence, Looks right or ±30m raises last-night trust. Lookback already seeds provisional debt.</p>
+          <div class="glass highlight info-card">
+            <div class="info-row">
+              <div class="icon-chip">☀️</div>
+              <div>
+                <div class="info-title">Morning refine</div>
+                <div class="info-body">If last night is Auto below 70% confidence, Looks right or ±30m raises last-night trust. Lookback nights already seed provisional debt.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Analysis -->
+        <div class="phase-panel" data-phase="4">
+          <h2 class="title">Reading last week</h2>
+          <p class="subtitle">Checking Motion, Health, and your quiz need. Empty Health is fine — motion can still seed nights.</p>
+          <div class="glass highlight list-card">
+            <div class="mono-eye list-eye">LOOKBACK</div>
+            <div class="check-row"><div class="check-dot wait" data-check="0"></div><div class="check-label" data-check-label="0">Phone motion lookback</div></div>
+            <div class="check-row"><div class="check-dot wait" data-check="1"></div><div class="check-label" data-check-label="1">Apple Health sleep</div></div>
+            <div class="check-row"><div class="check-dot wait" data-check="2"></div><div class="check-label" data-check-label="2">Steps &amp; workouts</div></div>
+            <div class="check-row"><div class="check-dot wait" data-check="3"></div><div class="check-label" data-check-label="3">Quiz-seeded sleep need</div></div>
+            <div class="check-row"><div class="check-dot wait" data-check="4"></div><div class="check-label" data-check-label="4">Provisional debt</div></div>
+          </div>
+        </div>
+
+        <!-- 5 Need -->
+        <div class="phase-panel" data-phase="5">
+          <h2 class="title">Your sleep need</h2>
+          <p class="subtitle">Provisional — sharpens over ~14 nights.</p>
+          <div class="glass highlight violet-soft need-hero">
+            <div class="mono-eye tight">SLEEP NEED</div>
+            <div class="need-num-row">
+              <span class="need-num">7.5</span><span class="need-unit">h</span>
+            </div>
+            <span class="pill" style="color:var(--violet)">Provisional — sharpens over ~14 nights.</span>
+            <span class="sample-tag">Sample demo</span>
+            <p class="need-lead">Based on your age, your sleep need is <strong>7.5h</strong>.</p>
+            <p class="reveal-body">Seeded from your age (NSF midpoint). Observed trusted nights will pull this toward your median over two weeks.</p>
+            <p class="bridge">Nights shorter than this need add to sleep debt. The next screen is that number.</p>
+          </div>
+        </div>
+
+        <!-- 6 Debt -->
+        <div class="phase-panel" data-phase="6">
+          <h2 class="title">Your sleep debt</h2>
+          <p class="subtitle">14-day weighted math from lookback nights. The orb is the number. Trend is only nights that landed.</p>
+
+          <div class="glass highlight debt-hero">
+            <div class="mono-eye tight">SLEEP DEBT · PROVISIONAL</div>
+            <div class="orb-wrap" aria-label="Debt orb 6.2 hours">
+              <div class="orb-spin"></div>
+              <div class="orb-ring"><div class="orb-inner">
+                <div class="orb-label">
+                  <div class="orb-hours">6.2<span class="u">h</span></div>
+                  <div class="orb-eye">Hours of debt</div>
+                </div>
+              </div></div>
+            </div>
+            <div class="building">Provisional — Building 7 of 14 nights</div>
+            <div class="meta">Last night · 5h 48m · Motion · sample</div>
+            <span class="sample-tag">Sample demo numbers</span>
+          </div>
+
+          <div class="glass trend-card">
+            <div class="section-head">
+              <div class="mono-eye eye">7 days</div>
+              <div class="ht">Debt trend</div>
+            </div>
+            <div class="bars" id="trendBars"></div>
+          </div>
+
+          <div class="glass highlight energy-card">
+            <div class="energy-head">
+              <div>
+                <div class="mono-eye tight">ENERGY NOW</div>
+                <div class="energy-num-row">
+                  <span class="energy-num">62</span><span class="energy-pct">%</span>
+                </div>
+              </div>
+              <span class="pill glow" style="color:var(--amber)">Fair</span>
+            </div>
+            <p class="reveal-body">Debt is pulling energy down — protect the next two nights and keep wake check-ins honest.</p>
+            <div class="windows">
+              <div class="win-row">
+                <div class="win-rail"><div class="win-dot" style="background:var(--cyan);color:var(--cyan)"></div><div class="win-line"></div></div>
+                <div>
+                  <div class="win-label">Grogginess</div>
+                  <div class="win-tip">6a – 8a · Sleep inertia — easy tasks, light, and water before hard work.</div>
+                </div>
+              </div>
+              <div class="win-row">
+                <div class="win-rail"><div class="win-dot" style="background:var(--amber);color:var(--amber)"></div><div class="win-line"></div></div>
+                <div>
+                  <div class="win-label">Morning peak</div>
+                  <div class="win-tip">9a – 12p · Highest energy — deepest work and decisions first.</div>
+                </div>
+              </div>
+              <div class="win-row">
+                <div class="win-rail"><div class="win-dot" style="background:var(--rose);color:var(--rose)"></div></div>
+                <div>
+                  <div class="win-label">Afternoon dip</div>
+                  <div class="win-tip">2p – 4p · Natural trough — walk, meetings, or a short rest. Not a new caffeine load.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 Offer -->
+        <div class="phase-panel" data-phase="7">
+          <h2 class="title">Longer history. Aria coaching.</h2>
+          <p class="subtitle">Provisional debt stays visible free. Plus adds longer history and morning coaching so the 14-night picture sharpens — skip anytime.</p>
+          <div class="glass highlight violet offer-hero">
+            <div class="mono-eye tight">SOMNIQ PLUS</div>
+            <div class="offer-price">₹499/mo</div>
+            <span class="pill" style="color:var(--violet)">DEBT STAYS FREE</span>
+            <p class="reveal-body">The number you just saw stays visible. Plus is longer history and Aria coaching — not a lock on debt. Skip anytime for demo / TestFlight.</p>
+          </div>
+          <div class="glass offer-list">
+            <div class="num-row"><div class="num-k">01</div><div><div class="num-t">Longer history</div><div class="num-d">The 14-night picture sharpens past the free window.</div></div></div>
+            <div class="num-row"><div class="num-k">02</div><div><div class="num-t">Aria coaching</div><div class="num-d">Morning debrief and questions grounded in your debt.</div></div></div>
+            <div class="num-row"><div class="num-k">03</div><div><div class="num-t">Morning refine</div><div class="num-d">Looks-right still raises last-night trust on the free tier.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <button class="cta" id="ctaBtn" type="button">Get started</button>
+        <button class="skip hidden" id="skipBtn" type="button">Not now</button>
+        <div class="skip-spacer" id="skipSpacer"></div>
+      </div>
+    </div>
+
+    <div class="done-toast" id="doneToast">Onboarding finished · mock only (no API)</div>
+  </div>
+
+  <p class="nav-hint">Click through Next / Skip. Pure mock — no permissions, no API.<br /><code>file:///workspace/somniq-onboarding-preview/index.html</code></p>
+
+<script>
+(function () {
+  const PHASES = [
+    {
+      label: 'Teaser',
+      titleKey: null,
+      cta: 'Get started',
+      skip: null,
+    },
+    {
+      label: 'Motion & Fitness',
+      cta: 'Allow Motion & Fitness',
+      skip: 'Skip — debt stays empty',
+    },
+    {
+      label: 'Apple Health',
+      cta: 'Allow Health (read-only)',
+      skip: 'Not now',
+    },
+    {
+      label: 'Morning refine',
+      cta: 'Allow notifications',
+      skip: 'Not now',
+    },
+    {
+      label: 'Analyzing',
+      cta: 'Continue',
+      skip: null,
+      analysis: true,
+    },
+    {
+      label: 'Sleep need',
+      cta: 'See my sleep debt',
+      skip: null,
+    },
+    {
+      label: 'Sleep debt',
+      cta: 'Continue',
+      skip: null,
+    },
+    {
+      label: 'Plus',
+      cta: 'See Plus',
+      skip: 'Skip for demo / TestFlight',
+      finish: true,
+    },
+  ];
+
+  const trend = [
+    { d: 'M', h: 4.2, c: '#34d399' },
+    { d: 'T', h: 5.1, c: '#fbbf24' },
+    { d: 'W', h: 5.8, c: '#fbbf24' },
+    { d: 'T', h: 6.4, c: '#fb7185' },
+    { d: 'F', h: 5.9, c: '#fbbf24' },
+    { d: 'S', h: 6.8, c: '#fb7185' },
+    { d: 'S', h: 6.2, c: '#fb7185' },
+  ];
+
+  const barsEl = document.getElementById('trendBars');
+  barsEl.innerHTML = trend.map(b => `
+    <div class="bar-col">
+      <div class="bar-val" style="color:${b.c}">${b.h.toFixed(1)}</div>
+      <div class="debt-bar" style="height:${Math.max(8, b.h * 10)}px;background:${b.c}"></div>
+      <div class="bar-day">${b.d}</div>
+    </div>
+  `).join('');
+
+  const progressEl = document.getElementById('progress');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const ctaBtn = document.getElementById('ctaBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const skipSpacer = document.getElementById('skipSpacer');
+  const scrollBody = document.getElementById('scrollBody');
+  const panels = [...document.querySelectorAll('.phase-panel')];
+  const doneToast = document.getElementById('doneToast');
+  const chromeTop = document.getElementById('chromeTop');
+
+  let step = 0;
+  let analysisDone = false;
+  let analysisTimer = null;
+
+  function renderProgress() {
+    progressEl.innerHTML = '';
+    for (let i = 0; i < PHASES.length; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'seg';
+      if (i < step) seg.classList.add('done');
+      else if (i === step) seg.classList.add('active');
+      progressEl.appendChild(seg);
+    }
+  }
+
+  function showPanel(i) {
+    panels.forEach((p, idx) => {
+      p.classList.toggle('active', idx === i);
+    });
+    scrollBody.scrollTop = 0;
+  }
+
+  function setChrome() {
+    const p = PHASES[step];
+    phaseLabel.textContent = `${p.label} · ${step + 1} of ${PHASES.length}`;
+    ctaBtn.textContent = p.cta;
+    ctaBtn.disabled = false;
+    ctaBtn.classList.remove('busy');
+    ctaBtn.innerHTML = p.cta;
+
+    if (p.skip) {
+      skipBtn.textContent = p.skip;
+      skipBtn.classList.remove('hidden');
+      skipSpacer.classList.add('hidden');
+    } else {
+      skipBtn.classList.add('hidden');
+      skipSpacer.classList.remove('hidden');
+    }
+
+    // Teaser hides progress chrome title style slightly — still show
+    chromeTop.style.opacity = step === 0 ? '0.85' : '1';
+  }
+
+  function resetChecks() {
+    document.querySelectorAll('[data-check]').forEach(el => {
+      el.className = 'check-dot wait';
+    });
+    document.querySelectorAll('[data-check-label]').forEach(el => {
+      el.className = 'check-label';
+      const base = el.textContent.replace(/ — none yet$/, '');
+      // restore originals
+    });
+    const labels = [
+      'Phone motion lookback',
+      'Apple Health sleep',
+      'Steps & workouts',
+      'Quiz-seeded sleep need',
+      'Provisional debt',
+    ];
+    labels.forEach((t, i) => {
+      const el = document.querySelector(`[data-check-label="${i}"]`);
+      if (el) { el.className = 'check-label'; el.textContent = t; }
+    });
+  }
+
+  function runAnalysis() {
+    analysisDone = false;
+    resetChecks();
+    ctaBtn.disabled = true;
+    ctaBtn.classList.add('busy');
+    ctaBtn.innerHTML = '<span class="spinner"></span> Reading last week…';
+
+    const outcomes = [
+      { state: 'ok', miss: false },
+      { state: 'miss', miss: true }, // Health empty — honest
+      { state: 'ok', miss: false },
+      { state: 'ok', miss: false },
+      { state: 'ok', miss: false },
+    ];
+
+    let i = 0;
+    clearInterval(analysisTimer);
+    analysisTimer = setInterval(() => {
+      if (i >= outcomes.length) {
+        clearInterval(analysisTimer);
+        analysisDone = true;
+        ctaBtn.disabled = false;
+        ctaBtn.classList.remove('busy');
+        ctaBtn.textContent = 'Continue';
+        return;
+      }
+      const dot = document.querySelector(`[data-check="${i}"]`);
+      const lab = document.querySelector(`[data-check-label="${i}"]`);
+      const o = outcomes[i];
+      if (dot) {
+        dot.className = 'check-dot ' + o.state;
+      }
+      if (lab && o.miss) {
+        lab.className = 'check-label miss';
+        lab.textContent = lab.textContent + ' — none yet';
+      }
+      i += 1;
+    }, 420);
+  }
+
+  function goTo(n) {
+    step = Math.max(0, Math.min(PHASES.length - 1, n));
+    showPanel(step);
+    renderProgress();
+    setChrome();
+    doneToast.classList.remove('show');
+    if (PHASES[step].analysis) runAnalysis();
+  }
+
+  function next() {
+    const p = PHASES[step];
+    if (p.analysis && !analysisDone) return;
+    if (p.finish) {
+      doneToast.classList.add('show');
+      setTimeout(() => doneToast.classList.remove('show'), 2600);
+      // stay on offer; allow replay via skip or restart
+      return;
+    }
+    if (step < PHASES.length - 1) goTo(step + 1);
+  }
+
+  function skip() {
+    if (step === PHASES.length - 1) {
+      doneToast.textContent = 'Skipped Plus · debt stays free (mock)';
+      doneToast.classList.add('show');
+      setTimeout(() => {
+        doneToast.classList.remove('show');
+        doneToast.textContent = 'Onboarding finished · mock only (no API)';
+      }, 2600);
+      return;
+    }
+    goTo(step + 1);
+  }
+
+  ctaBtn.addEventListener('click', next);
+  skipBtn.addEventListener('click', skip);
+
+  // Keyboard: right / enter advance
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') goTo(step - 1);
+  });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>

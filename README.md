@@ -27,3 +27,7 @@ https://github.com/drharish14-tech/somniq-app
 - `index.html` — GitHub Pages homepage (standalone mock)
 - `SOMNIQ App v1 standalone.html` — same standalone mock
 - `design_handoff_somniq_v1/` — full Claude Design handoff (README, system + screen JSX, HTML exports)
+
+## Onboarding convert preview
+Interactive Glass Depth convert flow (PR #28 review):
+https://drharish14-tech.github.io/somniq-design-v1/onboarding.html
