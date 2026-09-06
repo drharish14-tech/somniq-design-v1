@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Somniq · Onboarding preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #fff;
+    --muted: rgba(255,255,255,0.55);
+    --faint: rgba(255,255,255,0.35);
+    --hairline: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.1);
+    --violet: #a78bfa;
+    --cyan: #22d3ee;
+    --pink: #ec4899;
+    --glass-top: rgba(255,255,255,0.08);
+    --glass-bot: rgba(255,255,255,0.02);
+    --radius: 22px;
+    --phone-w: 390px;
+    --phone-h: 844px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: #07070a;
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 28px 16px 40px;
+  }
+
+  .chrome {
+    width: min(var(--phone-w), 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .chrome h1 {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--violet);
+    font-weight: 500;
+  }
+  .chrome p { font-size: 12px; color: var(--faint); text-align: right; }
+
+  .phone-shell {
+    width: min(var(--phone-w), 100%);
+    height: min(var(--phone-h), calc(100vh - 120px));
+    max-height: var(--phone-h);
+    border-radius: 44px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--bg);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04),
+      0 40px 90px rgba(0,0,0,0.7),
+      0 0 120px rgba(167,139,250,0.1);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Soft static / extremely slow aurora — no spin */
+  .aurora { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .aurora .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(72px); opacity: 0.42;
+  }
+  .aurora .b1 {
+    width: 280px; height: 280px;
+    background: rgba(167,139,250,0.45);
+    top: -100px; left: -80px;
+    animation: auroraSoft 48s ease-in-out infinite alternate;
+  }
+  .aurora .b2 {
+    width: 220px; height: 220px;
+    background: rgba(34,211,238,0.2);
+    top: 280px; right: -90px;
+    animation: auroraSoft 56s ease-in-out infinite alternate-reverse;
+  }
+  .aurora .b3 {
+    width: 240px; height: 240px;
+    background: rgba(236,72,153,0.12);
+    bottom: -40px; left: 40px;
+    opacity: 0.28;
+  }
+  @keyframes auroraSoft {
+    from { transform: translate(0, 0); }
+    to { transform: translate(12px, 16px); }
+  }
+
+  .status-bar {
+    position: relative; z-index: 2;
+    height: 54px; padding: 16px 28px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; font-weight: 600; color: var(--ink);
+  }
+  .status-bar .icons { display: flex; gap: 6px; opacity: 0.85; font-size: 11px; }
+
+  .frame {
+    position: relative; z-index: 1;
+    height: calc(100% - 54px);
+    display: flex; flex-direction: column;
+  }
+
+  .top { padding: 2px 24px 0; flex-shrink: 0; }
+  .phase-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 2.2px;
+    text-transform: uppercase; color: var(--violet);
+    margin-bottom: 10px; font-weight: 500;
+  }
+  .progress { display: flex; gap: 5px; margin-bottom: 18px; }
+  .progress .dot {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.35s ease, box-shadow 0.35s ease;
+  }
+  .progress .dot.done { background: var(--cyan); box-shadow: 0 0 8px rgba(34,211,238,0.4); }
+  .progress .dot.active {
+    background: var(--violet);
+    box-shadow: 0 0 10px rgba(167,139,250,0.5);
+  }
+
+  .body {
+    flex: 1; overflow-y: auto; padding: 0 24px 8px;
+    scrollbar-width: none; position: relative;
+  }
+  .body::-webkit-scrollbar { display: none; }
+
+  .phase-panel {
+    opacity: 0; transform: translateY(8px);
+    pointer-events: none; position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    padding-bottom: 8px;
+  }
+  .phase-panel.active {
+    opacity: 1; transform: translateY(0);
+    pointer-events: auto; position: relative;
+  }
+
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--violet);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .eyebrow.muted { color: var(--muted); }
+  .eyebrow.cyan { color: var(--cyan); }
+  .eyebrow.pink { color: var(--pink); }
+
+  .title {
+    font-weight: 700; font-size: 32px;
+    letter-spacing: -0.8px; line-height: 1.1;
+    color: var(--ink); margin-bottom: 12px;
+  }
+  .title.xl {
+    font-size: 36px; letter-spacing: -1px; line-height: 1.06;
+  }
+  .title.hero {
+    font-size: 40px; letter-spacing: -1.2px; line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 15px; line-height: 1.55;
+    color: var(--muted); margin-bottom: 36px; font-weight: 400;
+  }
+  .subtitle.tight { margin-bottom: 28px; }
+
+  .glass {
+    background: linear-gradient(135deg, var(--glass-top), var(--glass-bot));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    position: relative; overflow: hidden;
+  }
+  .glass::before {
+    content: "";
+    position: absolute; inset: 0 0 auto 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    opacity: 0.7;
+  }
+  .glass.pad { padding: 22px; }
+  .glass.pad-lg { padding: 28px 22px; }
+  .glass.mb { margin-bottom: 14px; }
+  .glass.selected {
+    border-color: rgba(167,139,250,0.5);
+    box-shadow: 0 0 0 1px rgba(167,139,250,0.25), 0 12px 32px rgba(167,139,250,0.12);
+  }
+
+  .sample-tag {
+    display: inline-flex; align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--faint); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 4px 9px; margin-top: 14px;
+  }
+
+  .spacer { flex: 1; min-height: 16px; }
+
+  /* ——— Quiet chips (teaser) ——— */
+  .chip-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 8px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 15px; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.88);
+  }
+  .chip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+
+  /* ——— Still abstract ring (debt pillar tease) ——— */
+  .ring-sketch {
+    width: 140px; height: 140px;
+    margin: 12px auto 32px;
+    border-radius: 50%;
+    background: conic-gradient(from 210deg, var(--violet), var(--cyan), var(--pink), var(--violet));
+    padding: 2px;
+    /* NO animation — frozen */
+  }
+  .ring-sketch-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: radial-gradient(circle at 35% 28%, rgba(255,255,255,0.06), #05040a 55%);
+    display: grid; place-items: center;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .ring-sketch-inner span {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--faint); font-weight: 500;
+  }
+
+  .math-line {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px; font-weight: 500; color: var(--ink);
+    letter-spacing: -0.2px; line-height: 1.5;
+    margin: 6px 0 10px;
+  }
+  .math-note { font-size: 13px; line-height: 1.5; color: var(--muted); }
+
+  /* ——— Energy wave ——— */
+  .wave-wrap { padding: 22px 18px 16px; }
+  .wave-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .wave-num {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700; font-size: 42px; letter-spacing: -1.4px;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .wave-pct {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 18px; color: var(--faint); margin-left: 2px;
+  }
+  .wave-svg { width: 100%; height: 96px; display: block; margin-top: 6px; }
+  .wave-axis {
+    display: flex; justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; color: var(--faint); margin-top: 6px;
+  }
+  .pill-quiet {
+    font-size: 11px; color: var(--faint);
+    padding: 6px 11px; border: 1px solid var(--hairline);
+    border-radius: 999px;
+  }
+  .pill-cyan {
+    font-size: 11px; font-weight: 600; color: var(--cyan);
+    padding: 6px 11px; border: 1px solid rgba(34,211,238,0.35);
+    border-radius: 999px; background: rgba(34,211,238,0.08);
+  }
+
+  .windows { display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
+  .win-row { display: flex; gap: 14px; align-items: flex-start; }
+  .win-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
+  }
+  .win-label { font-weight: 600; font-size: 15px; }
+  .win-tip { font-size: 13px; color: var(--muted); line-height: 1.45; margin-top: 3px; }
+
+  /* ——— Aria — frozen conic avatar ——— */
+  .aria-card { padding: 22px; }
+  .aria-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+  }
+  .aria-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: conic-gradient(from 200deg, var(--violet), var(--cyan), var(--pink), var(--violet));
+    padding: 2px; flex-shrink: 0;
+    /* frozen — no spin */
+  }
+  .aria-avatar-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: #0a0812; display: grid; place-items: center;
+    font-weight: 700; font-size: 15px; color: var(--violet);
+  }
+  .aria-name { font-weight: 600; font-size: 16px; }
+  .aria-meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--muted); margin-top: 3px;
+  }
+  .aria-body {
+    font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.84);
+  }
+  .aria-actions { display: flex; gap: 8px; margin-top: 20px; }
+  .mini-pill {
+    border: none; border-radius: 999px; padding: 10px 16px;
+    font-family: Inter, sans-serif; font-size: 13px; font-weight: 600;
+    cursor: default;
+  }
+  .mini-pill.solid { background: rgba(255,255,255,0.95); color: #000; }
+  .mini-pill.ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ——— Snore — quiet mic ——— */
+  .mic-glyph {
+    width: 72px; height: 72px; margin: 8px auto 28px;
+    border-radius: 50%;
+    background: rgba(236,72,153,0.08);
+    border: 1px solid rgba(236,72,153,0.22);
+    display: grid; place-items: center;
+  }
+  .mic-glyph svg { width: 26px; height: 26px; }
+  .why-list { list-style: none; }
+  .why-list li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px 0; border-bottom: 1px solid var(--hairline);
+    font-size: 14px; line-height: 1.45; color: var(--muted);
+  }
+  .why-list li:last-child { border-bottom: none; }
+  .why-list .mark {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--pink); flex-shrink: 0; margin-top: 2px;
+    font-weight: 500;
+  }
+
+  /* ——— Profile ——— */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 8px;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    color: var(--ink);
+    font-family: Inter, sans-serif;
+    font-size: 16px; font-weight: 500;
+    outline: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: rgba(167,139,250,0.4);
+    box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+  }
+  .field select { appearance: none; cursor: pointer; }
+
+  /* ——— Permission ——— */
+  .perm-icon {
+    width: 56px; height: 56px; border-radius: 18px;
+    display: grid; place-items: center;
+    margin-bottom: 22px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+  }
+  .perm-icon.motion {
+    background: rgba(34,211,238,0.1);
+    border-color: rgba(34,211,238,0.22);
+  }
+  .perm-icon.health {
+    background: rgba(167,139,250,0.1);
+    border-color: rgba(167,139,250,0.22);
+  }
+  .perm-icon svg { width: 24px; height: 24px; }
+  .honest-list { list-style: none; }
+  .honest-list li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 13px 0; border-bottom: 1px solid var(--hairline);
+    font-size: 14px; line-height: 1.45; color: var(--muted);
+  }
+  .honest-list li:last-child { border-bottom: none; }
+  .honest-list .mark {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; color: var(--cyan); flex-shrink: 0; margin-top: 1px;
+    font-weight: 600;
+  }
+  .honest-list .mark.no { color: var(--faint); }
+
+  /* ——— Analyzing — checklist only, no spinning orb ——— */
+  .analyze-wrap { padding-top: 28px; }
+  .check-list { padding: 6px 4px; }
+  .check-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 8px; border-bottom: 1px solid var(--hairline);
+    opacity: 0.45;
+    transition: opacity 0.45s ease;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row.lit { opacity: 1; }
+  .check-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: transparent; border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  .check-dot.ok {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    box-shadow: 0 0 12px rgba(34,211,238,0.7);
+  }
+  .check-dot.miss {
+    background: transparent;
+    border-color: var(--faint);
+  }
+  .check-label { font-size: 15px; flex: 1; font-weight: 500; }
+  .check-label.miss { color: var(--faint); font-weight: 400; }
+
+  /* ——— Need hero ——— */
+  .need-stage {
+    text-align: center;
+    padding: 48px 8px 24px;
+    margin-top: 12px;
+  }
+  .need-num-row {
+    display: flex; align-items: baseline; justify-content: center;
+    margin: 20px 0 24px;
+  }
+  .need-num {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 800; font-size: 88px; line-height: 0.9;
+    letter-spacing: -0.05em;
+    background: linear-gradient(160deg, #fff 20%, var(--violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .need-unit {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 28px; color: var(--faint); margin-left: 6px; font-weight: 600;
+  }
+  .need-lead {
+    font-size: 16px; line-height: 1.5; color: rgba(255,255,255,0.88);
+    max-width: 280px; margin: 0 auto 10px;
+  }
+  .need-body {
+    font-size: 13px; line-height: 1.5; color: var(--muted);
+    max-width: 280px; margin: 0 auto;
+  }
+
+  /* ——— DebtOrb — screen 10 only, STILL ——— */
+  .debt-stage { text-align: center; padding: 8px 0 4px; }
+  .orb-wrap {
+    width: 188px; height: 188px; position: relative;
+    margin: 8px auto 18px;
+  }
+  .orb-glow {
+    position: absolute; inset: -28px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,139,250,0.35) 0%, rgba(34,211,238,0.12) 40%, transparent 70%);
+    filter: blur(8px);
+    /* static glow — no spin */
+  }
+  .orb-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 200deg, var(--violet), var(--cyan), var(--pink), var(--violet));
+    padding: 9px;
+    /* STILL — no animation */
+  }
+  .orb-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 24%, rgba(125,211,252,0.22), rgba(255,255,255,0.08) 18%, rgba(12,10,24,0.98) 52%, #05040a 100%);
+    display: grid; place-items: center;
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -24px 40px rgba(167,139,250,0.12);
+  }
+  .orb-inner::after {
+    content: "";
+    position: absolute; width: 52px; height: 52px; border-radius: 50%;
+    top: 24%; left: 26%;
+    background: radial-gradient(circle, rgba(34,211,238,0.4), transparent 70%);
+    opacity: 0.4;
+  }
+  .orb-label { position: relative; z-index: 2; text-align: center; }
+  .orb-hours {
+    font-family: Inter, sans-serif;
+    font-weight: 800; font-size: 56px; line-height: 1;
+    letter-spacing: -0.045em; color: #fff;
+    text-shadow: 0 0 24px rgba(167,139,250,0.45);
+  }
+  .orb-hours .u { font-size: 28px; letter-spacing: -0.02em; font-weight: 700; opacity: 0.85; }
+  .orb-eye {
+    font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: rgba(186,230,253,0.65); margin-top: 8px; font-weight: 500;
+  }
+  .building {
+    font-weight: 600; font-size: 14px; color: var(--cyan);
+    margin-bottom: 4px;
+  }
+  .meta-center {
+    font-size: 12px; color: var(--faint); line-height: 1.4;
+  }
+
+  .bars {
+    display: flex; align-items: flex-end; gap: 8px;
+    height: 88px; margin-top: 16px;
+  }
+  .bar-col {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+  }
+  .bar-val {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; font-variant-numeric: tabular-nums;
+    color: var(--faint);
+  }
+  .debt-bar {
+    width: 100%; border-radius: 5px 5px 3px 3px;
+    opacity: 0.85; min-height: 8px;
+  }
+  .bar-day { font-size: 10px; color: var(--faint); }
+
+  /* ——— Paywall ——— */
+  .proof-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stars { color: var(--violet); letter-spacing: 1px; font-size: 12px; }
+  .proof-text { font-size: 12px; color: var(--muted); }
+  .free-badge {
+    display: inline-flex; align-items: center;
+    padding: 7px 12px; border-radius: 999px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
+    font-weight: 600; color: var(--cyan);
+    border: 1px solid rgba(34,211,238,0.35);
+    background: rgba(34,211,238,0.08);
+    margin-bottom: 18px;
+  }
+  .value-stack { padding: 4px 0 18px; }
+  .value-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 14px; color: var(--muted); line-height: 1.4;
+  }
+  .value-row:last-child { border-bottom: none; }
+  .value-row strong { display: block; color: var(--ink); font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .value-row .check {
+    color: var(--cyan); flex-shrink: 0; font-weight: 700;
+    margin-top: 2px; font-size: 13px;
+  }
+
+  .plans {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .plan-card {
+    padding: 16px 14px 14px; cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .plan-badge {
+    position: absolute; top: -9px; left: 12px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px;
+    color: #fff; font-weight: 600;
+    background: var(--violet);
+  }
+  .plan-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .plan-price {
+    font-weight: 700; font-size: 22px; letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .plan-price .mo {
+    font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0;
+  }
+  .plan-sub { font-size: 11px; color: var(--faint); line-height: 1.35; }
+
+  .timeline {
+    display: flex; gap: 0; margin: 4px 0 6px;
+    font-size: 11px; color: var(--faint);
+  }
+  .timeline-step { flex: 1; text-align: center; position: relative; padding-top: 16px; }
+  .timeline-step::before {
+    content: ""; position: absolute; top: 4px; left: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--violet); transform: translateX(-50%);
+  }
+  .timeline-step:not(:last-child)::after {
+    content: ""; position: absolute; top: 7px; left: calc(50% + 8px);
+    right: calc(-50% + 8px); height: 1px; background: var(--hairline);
+  }
+  .timeline-step strong {
+    display: block; color: var(--ink); font-weight: 600; font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  .footer {
+    flex-shrink: 0;
+    padding: 10px 24px 26px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8) 20%, rgba(0,0,0,0.96));
+  }
+  .cta {
+    width: 100%; border: none;
+    background: rgba(255,255,255,0.96);
+    color: #000;
+    font-family: Inter, sans-serif;
+    font-weight: 600; font-size: 15px;
+    border-radius: 999px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 0 32px rgba(167,139,250,0.22), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .cta:hover { opacity: 0.94; }
+  .cta:active { transform: scale(0.985); }
+  .cta:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+  .skip {
+    display: block; width: 100%; border: none; background: transparent;
+    color: var(--faint); font-family: Inter, sans-serif;
+    font-weight: 500; font-size: 13px;
+    padding: 14px 8px 2px; cursor: pointer; text-align: center;
+  }
+  .skip.hidden { display: none; }
+
+  .done-toast {
+    position: absolute; left: 20px; right: 20px; bottom: 110px;
+    z-index: 5; padding: 14px 16px; border-radius: 16px;
+    background: rgba(12,12,16,0.94);
+    border: 1px solid rgba(167,139,250,0.35);
+    color: var(--cyan); font-size: 13px; text-align: center;
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .done-toast.show { opacity: 1; transform: translateY(0); }
+
+  .nav-hint {
+    width: min(var(--phone-w), 100%);
+    font-size: 12px; color: var(--faint);
+    text-align: center; line-height: 18px;
+  }
+  .nav-hint code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--muted);
+  }
+
+  .foot-note {
+    font-size: 12px; color: var(--faint); text-align: center;
+    margin-top: 20px; line-height: 1.4;
+  }
+
+  @media (max-width: 420px) {
+    body { padding: 12px 0 20px; }
+    .phone-shell {
+      width: 100%; height: 100vh; max-height: none;
+      border-radius: 0; border: none;
+    }
+    .chrome, .nav-hint { padding: 0 16px; width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="chrome">
+    <h1>Somniq · Glass Depth</h1>
+    <p>13-screen · craft mock</p>
+  </div>
+
+  <div class="phone-shell" id="phone">
+    <div class="aurora" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="icons">●●● ▮▮▮</span>
+    </div>
+
+    <div class="frame">
+      <div class="top" id="chromeTop">
+        <div class="phase-label" id="phaseLabel">Teaser · 1 of 13</div>
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="body" id="scrollBody">
+
+        <!-- 0 Teaser — typography hero + 4 quiet chips · no spinning orb -->
+        <div class="phase-panel active" data-phase="0">
+          <div class="eyebrow">PHYSICIAN-BUILT</div>
+          <h2 class="title hero">See what last night did to your energy</h2>
+          <p class="subtitle">Phone-first sleep debt &amp; Aria coaching. No Watch required.</p>
+          <div class="spacer"></div>
+          <div class="chip-row">
+            <div class="chip"><span class="dot" style="background:var(--violet)"></span>Aria</div>
+            <div class="chip"><span class="dot" style="background:var(--violet)"></span>Debt</div>
+            <div class="chip"><span class="dot" style="background:var(--pink)"></span>Snoring</div>
+            <div class="chip"><span class="dot" style="background:var(--cyan)"></span>Energy</div>
+          </div>
+          <p class="foot-note">Debt stays free forever.</p>
+        </div>
+
+        <!-- 1 Debt pillar — still ring sketch + one math card -->
+        <div class="phase-panel" data-phase="1">
+          <div class="eyebrow">SLEEP DEBT</div>
+          <h2 class="title">Know what you owe your body</h2>
+          <p class="subtitle tight">One number. Honest math. Always free.</p>
+          <div class="ring-sketch" aria-hidden="true">
+            <div class="ring-sketch-inner"><span>Debt</span></div>
+          </div>
+          <div class="glass pad">
+            <div class="eyebrow muted" style="margin-bottom:0">14-NIGHT MATH</div>
+            <div class="math-line">Need − sleep, weighted over 14 nights.</div>
+            <p class="math-note">Short nights add. Recovery nights pay down. We never invent missing days.</p>
+          </div>
+        </div>
+
+        <!-- 2 Energy pillar — wave tease only -->
+        <div class="phase-panel" data-phase="2">
+          <div class="eyebrow cyan">ENERGY</div>
+          <h2 class="title">Plan around peaks &amp; dips</h2>
+          <p class="subtitle tight">Energy Now reads from debt — not a vibe score.</p>
+          <div class="glass wave-wrap">
+            <div class="wave-head">
+              <div>
+                <div class="eyebrow cyan" style="margin-bottom:6px">ENERGY NOW</div>
+                <div style="display:flex;align-items:baseline">
+                  <span class="wave-num" style="color:var(--faint)">—</span><span class="wave-pct">%</span>
+                </div>
+              </div>
+              <span class="pill-quiet">Tease</span>
+            </div>
+            <svg class="wave-svg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="wf1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.28"/>
+                  <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="ws1" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#22d3ee"/>
+                  <stop offset="55%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,74 C40,72 55,58 80,34 C105,14 125,10 155,24 C185,38 200,62 230,66 C260,70 290,52 320,44 L320,96 L0,96 Z" fill="url(#wf1)"/>
+              <path d="M0,74 C40,72 55,58 80,34 C105,14 125,10 155,24 C185,38 200,62 230,66 C260,70 290,52 320,44" fill="none" stroke="url(#ws1)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="80" cy="34" r="3.5" fill="#22d3ee"/>
+              <circle cx="230" cy="66" r="3.5" fill="#ec4899"/>
+            </svg>
+            <div class="wave-axis"><span>6a</span><span>peak</span><span>dip</span><span>10p</span></div>
+          </div>
+        </div>
+
+        <!-- 3 Aria — one debrief glass card -->
+        <div class="phase-panel" data-phase="3">
+          <div class="eyebrow">ARIA</div>
+          <h2 class="title">A coach who knows your nights</h2>
+          <p class="subtitle tight">Morning debriefs grounded in your debt.</p>
+          <div class="glass aria-card">
+            <div class="aria-head">
+              <div class="aria-avatar"><div class="aria-avatar-inner">A</div></div>
+              <div>
+                <div class="aria-name">Aria</div>
+                <div class="aria-meta">Morning debrief · sample</div>
+              </div>
+            </div>
+            <p class="aria-body">You slept short of need last night. That pulled today’s energy down — protect the next two nights and keep wake check-ins honest.</p>
+            <div class="aria-actions">
+              <button class="mini-pill solid" type="button">Set cutoff</button>
+              <button class="mini-pill ghost" type="button">Tell me more</button>
+            </div>
+          </div>
+          <span class="sample-tag">Sample debrief</span>
+        </div>
+
+        <!-- 4 Snore — quiet mic + privacy -->
+        <div class="phase-panel" data-phase="4">
+          <div class="eyebrow pink">SNORING</div>
+          <h2 class="title">Optional. On-device. Private.</h2>
+          <p class="subtitle tight">Audible proof some nights — never required for debt or energy.</p>
+          <div class="mic-glyph" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </div>
+          <div class="glass pad">
+            <ul class="why-list">
+              <li><span class="mark">01</span><span>Mic stays off until you enable a night in Track.</span></li>
+              <li><span class="mark">02</span><span>Audio processed on-device. We don’t sell health data.</span></li>
+              <li><span class="mark">03</span><span>Plus unlocks intensity maps &amp; share-with-doctor depth.</span></li>
+            </ul>
+          </div>
+          <p class="foot-note">No mic prompt in this first-run flow.</p>
+        </div>
+
+        <!-- 5 Profile lite — 3 fields, generous space -->
+        <div class="phase-panel" data-phase="5">
+          <div class="eyebrow muted">PROFILE</div>
+          <h2 class="title">A few details for Aria</h2>
+          <p class="subtitle tight">Demo fields only — nothing is saved.</p>
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" value="Nora" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="age">Age</label>
+            <input id="age" type="number" value="34" min="13" max="100" />
+          </div>
+          <div class="field">
+            <label for="schedule">Typical schedule</label>
+            <select id="schedule">
+              <option>22:30 → 6:30</option>
+              <option selected>23:00 → 7:00</option>
+              <option>23:30 → 7:30</option>
+              <option>00:00 → 8:00</option>
+            </select>
+          </div>
+          <span class="sample-tag">Demo · not persisted</span>
+        </div>
+
+        <!-- 6 Motion — honesty list -->
+        <div class="phase-panel" data-phase="6">
+          <div class="perm-icon motion" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="eyebrow cyan">MOTION &amp; FITNESS</div>
+          <h2 class="title">Allow phone motion</h2>
+          <p class="subtitle tight">We ask for ~14 days. iOS often keeps ~7 — honesty over padding.</p>
+          <div class="glass pad">
+            <ul class="honest-list">
+              <li><span class="mark">✓</span><span>Lookback asks for up to ~14 days.</span></li>
+              <li><span class="mark">✓</span><span>OS often returns ~7 — we never invent the rest.</span></li>
+              <li><span class="mark no">✕</span><span>Not Screen Time. Not unlocks. Not tappigraphy.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 7 Health — optional skip -->
+        <div class="phase-panel" data-phase="7">
+          <div class="perm-icon health" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+            </svg>
+          </div>
+          <div class="eyebrow">APPLE HEALTH</div>
+          <h2 class="title">Import nights you already have</h2>
+          <p class="subtitle tight">Read-only sleep &amp; steps. Skip anytime — Motion can still seed nights.</p>
+          <div class="glass pad">
+            <ul class="honest-list">
+              <li><span class="mark">01</span><span>Sleep samples first when present.</span></li>
+              <li><span class="mark">02</span><span>We never write guessed nights to Health.</span></li>
+              <li><span class="mark">03</span><span>You stay in control of categories.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 8 Analyzing — checklist only · gentle fades · NO spinning orb -->
+        <div class="phase-panel" data-phase="8">
+          <div class="analyze-wrap">
+            <div class="eyebrow" style="text-align:center">LOOKBACK</div>
+            <h2 class="title" style="text-align:center">Reading last week</h2>
+            <p class="subtitle" style="text-align:center;margin-bottom:24px">Motion · Health · need · debt</p>
+            <div class="glass check-list mb">
+              <div class="check-row" data-row="0"><div class="check-dot" data-check="0"></div><div class="check-label" data-check-label="0">Phone motion lookback</div></div>
+              <div class="check-row" data-row="1"><div class="check-dot" data-check="1"></div><div class="check-label" data-check-label="1">Apple Health sleep</div></div>
+              <div class="check-row" data-row="2"><div class="check-dot" data-check="2"></div><div class="check-label" data-check-label="2">Quiz-seeded sleep need</div></div>
+              <div class="check-row" data-row="3"><div class="check-dot" data-check="3"></div><div class="check-label" data-check-label="3">Provisional debt</div></div>
+            </div>
+            <p class="foot-note" style="margin-top:8px">Auto-advances · sample demo</p>
+          </div>
+        </div>
+
+        <!-- 9 Need — huge 7.5h hero -->
+        <div class="phase-panel" data-phase="9">
+          <div class="eyebrow">SLEEP NEED</div>
+          <h2 class="title">Your body asks for</h2>
+          <div class="need-stage">
+            <div class="eyebrow muted" style="margin-bottom:0">Provisional</div>
+            <div class="need-num-row">
+              <span class="need-num">7.5</span><span class="need-unit">h</span>
+            </div>
+            <p class="need-lead">Seeded from your age · sharpens over ~14 nights</p>
+            <p class="need-body">Observed trusted nights pull this toward your median. Nights shorter than need add to debt.</p>
+            <span class="sample-tag">Sample demo · 7.5h</span>
+          </div>
+        </div>
+
+        <!-- 10 Debt reveal — ONLY full still DebtOrb + Building + bars -->
+        <div class="phase-panel" data-phase="10">
+          <div class="eyebrow">SLEEP DEBT</div>
+          <h2 class="title">Your sleep debt</h2>
+          <div class="debt-stage">
+            <div class="orb-wrap" aria-label="Debt orb 6.2 hours">
+              <div class="orb-glow"></div>
+              <div class="orb-ring"><div class="orb-inner">
+                <div class="orb-label">
+                  <div class="orb-hours">6.2<span class="u">h</span></div>
+                  <div class="orb-eye">Hours of debt</div>
+                </div>
+              </div></div>
+            </div>
+            <div class="building">Building — 7 of 14 nights</div>
+            <div class="meta-center">Last night · 5h 48m · Motion</div>
+            <span class="sample-tag">Sample demo numbers</span>
+          </div>
+          <div class="glass pad mb" style="margin-top:20px">
+            <div class="eyebrow muted" style="margin-bottom:0">7 DAYS</div>
+            <div style="font-weight:600;font-size:15px;margin:4px 0 0">Debt trend</div>
+            <div class="bars" id="trendBars"></div>
+          </div>
+        </div>
+
+        <!-- 11 Energy reveal — 62% + windows -->
+        <div class="phase-panel" data-phase="11">
+          <div class="eyebrow cyan">ENERGY</div>
+          <h2 class="title">Today’s energy map</h2>
+          <p class="subtitle tight">Debt is already shaping the day ahead.</p>
+          <div class="glass wave-wrap mb">
+            <div class="wave-head">
+              <div>
+                <div class="eyebrow cyan" style="margin-bottom:6px">ENERGY NOW</div>
+                <div style="display:flex;align-items:baseline">
+                  <span class="wave-num">62</span><span class="wave-pct">%</span>
+                </div>
+              </div>
+              <span class="pill-cyan">Fair</span>
+            </div>
+            <svg class="wave-svg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="wf2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.26"/>
+                  <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="ws2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#22d3ee"/>
+                  <stop offset="50%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <rect x="198" y="12" width="52" height="70" rx="8" fill="rgba(236,72,153,0.1)"/>
+              <path d="M0,76 C35,74 50,60 78,30 C100,10 130,12 158,30 C185,48 205,64 228,68 C255,72 285,54 320,46 L320,96 L0,96 Z" fill="url(#wf2)"/>
+              <path d="M0,76 C35,74 50,60 78,30 C100,10 130,12 158,30 C185,48 205,64 228,68 C255,72 285,54 320,46" fill="none" stroke="url(#ws2)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="120" y1="10" x2="120" y2="86" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3 4"/>
+              <circle cx="120" cy="42" r="4" fill="#fff"/>
+            </svg>
+            <div class="wave-axis"><span>6a</span><span>now</span><span>2p</span><span>4p</span><span>10p</span></div>
+            <span class="sample-tag">Sample · 62%</span>
+          </div>
+          <div class="windows">
+            <div class="win-row">
+              <div class="win-dot" style="background:var(--cyan)"></div>
+              <div>
+                <div class="win-label">Morning peak</div>
+                <div class="win-tip">9a – 12p · Highest energy — deepest work first.</div>
+              </div>
+            </div>
+            <div class="win-row">
+              <div class="win-dot" style="background:var(--pink)"></div>
+              <div>
+                <div class="win-label">Afternoon dip</div>
+                <div class="win-tip">2p – 4p · Walk or meetings. Not another espresso.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12 Paywall — Calm rows + Beside timeline + DEBT STAYS FREE -->
+        <div class="phase-panel" data-phase="12">
+          <div class="eyebrow">SOMNIQ PLUS</div>
+          <h2 class="title" style="font-size:28px">Keep paying down 6.2h with Aria</h2>
+          <div class="proof-row">
+            <span class="stars">★★★★★</span>
+            <span class="proof-text">Physician-built · Phone-first</span>
+          </div>
+          <div class="free-badge">DEBT STAYS FREE</div>
+
+          <div class="value-stack">
+            <div class="value-row">
+              <span class="check">✓</span>
+              <div><strong>Full Aria debriefs</strong>Morning coaching &amp; Ask Aria</div>
+            </div>
+            <div class="value-row">
+              <span class="check">✓</span>
+              <div><strong>Longer history</strong>Debt &amp; energy beyond the free window</div>
+            </div>
+            <div class="value-row">
+              <span class="check">✓</span>
+              <div><strong>Snore depth</strong>On-device intensity maps &amp; trends</div>
+            </div>
+          </div>
+
+          <div class="plans">
+            <div class="glass plan-card selected" data-plan="annual" id="planAnnual">
+              <span class="plan-badge">7-day trial</span>
+              <div class="plan-name">Annual</div>
+              <div class="plan-price">₹249<span class="mo">/mo</span></div>
+              <div class="plan-sub">₹2,999/yr</div>
+            </div>
+            <div class="glass plan-card" data-plan="monthly" id="planMonthly">
+              <div class="plan-name">Monthly</div>
+              <div class="plan-price">₹499<span class="mo">/mo</span></div>
+              <div class="plan-sub">Cancel anytime</div>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-step"><strong>Today</strong>$0 · free</div>
+            <div class="timeline-step"><strong>Day 5</strong>Reminder</div>
+            <div class="timeline-step"><strong>Day 7</strong>Trial ends</div>
+          </div>
+          <p style="font-size:11px;color:var(--faint);text-align:center;margin-top:8px">No charge today · Cancel anytime · Sample pricing</p>
+        </div>
+
+      </div>
+
+      <div class="footer">
+        <button class="cta" id="ctaBtn" type="button">Continue</button>
+        <button class="skip hidden" id="skipBtn" type="button">Not now</button>
+      </div>
+    </div>
+
+    <div class="done-toast" id="doneToast">Onboarding finished · mock only (no API)</div>
+  </div>
+
+  <p class="nav-hint">Click through all 13 screens. Pure mock — no permissions, no API.<br /><code>/workspace/somniq-onboarding-preview/index.html</code></p>
+
+<script>
+(function () {
+  const PHASES = [
+    { label: 'Teaser', cta: 'See how it works', skip: null },
+    { label: 'Debt', cta: 'Continue', skip: null },
+    { label: 'Energy', cta: 'Continue', skip: null },
+    { label: 'Aria', cta: 'Continue', skip: null },
+    { label: 'Snoring', cta: 'Continue', skip: null },
+    { label: 'Profile', cta: 'Continue', skip: null },
+    { label: 'Motion', cta: 'Allow Motion & Fitness', skip: 'Skip — debt stays empty' },
+    { label: 'Health', cta: 'Allow Health (read-only)', skip: 'Not now — optional' },
+    { label: 'Analyzing', cta: 'Continue', skip: null, analysis: true, autoAdvanceMs: 2000 },
+    { label: 'Sleep need', cta: 'See my sleep debt', skip: null },
+    { label: 'Sleep debt', cta: 'See today’s energy', skip: null },
+    { label: 'Energy map', cta: 'Continue', skip: null },
+    {
+      label: 'Plus',
+      cta: 'Start free trial',
+      skip: 'Continue free with debt only',
+      finish: true,
+    },
+  ];
+
+  const trend = [
+    { d: 'M', h: 4.2, c: 'rgba(34,211,238,0.7)' },
+    { d: 'T', h: 5.1, c: 'rgba(34,211,238,0.75)' },
+    { d: 'W', h: 5.8, c: 'rgba(167,139,250,0.8)' },
+    { d: 'T', h: 6.4, c: 'rgba(236,72,153,0.75)' },
+    { d: 'F', h: 5.9, c: 'rgba(167,139,250,0.8)' },
+    { d: 'S', h: 6.8, c: 'rgba(236,72,153,0.8)' },
+    { d: 'S', h: 6.2, c: 'rgba(236,72,153,0.85)' },
+  ];
+
+  document.getElementById('trendBars').innerHTML = trend.map(b => `
+    <div class="bar-col">
+      <div class="bar-val">${b.h.toFixed(1)}</div>
+      <div class="debt-bar" style="height:${Math.max(10, b.h * 10)}px;background:${b.c}"></div>
+      <div class="bar-day">${b.d}</div>
+    </div>
+  `).join('');
+
+  const progressEl = document.getElementById('progress');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const ctaBtn = document.getElementById('ctaBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const scrollBody = document.getElementById('scrollBody');
+  const panels = [...document.querySelectorAll('.phase-panel')];
+  const doneToast = document.getElementById('doneToast');
+  const chromeTop = document.getElementById('chromeTop');
+  const planAnnual = document.getElementById('planAnnual');
+  const planMonthly = document.getElementById('planMonthly');
+
+  let step = 0;
+  let analysisDone = false;
+  let analysisTimer = null;
+  let autoTimer = null;
+  let selectedPlan = 'annual';
+
+  function selectPlan(plan) {
+    selectedPlan = plan;
+    const isAnnual = plan === 'annual';
+    planAnnual.classList.toggle('selected', isAnnual);
+    planMonthly.classList.toggle('selected', !isAnnual);
+  }
+  planAnnual.addEventListener('click', () => selectPlan('annual'));
+  planMonthly.addEventListener('click', () => selectPlan('monthly'));
+
+  function renderProgress() {
+    progressEl.innerHTML = '';
+    for (let i = 0; i < PHASES.length; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      if (i < step) d.classList.add('done');
+      else if (i === step) d.classList.add('active');
+      progressEl.appendChild(d);
+    }
+  }
+
+  function showPanel(i) {
+    panels.forEach((p, idx) => p.classList.toggle('active', idx === i));
+    scrollBody.scrollTop = 0;
+  }
+
+  function setChrome() {
+    const p = PHASES[step];
+    phaseLabel.textContent = `${p.label} · ${step + 1} of ${PHASES.length}`;
+    ctaBtn.disabled = false;
+    ctaBtn.textContent = p.cta;
+    if (p.skip) {
+      skipBtn.textContent = p.skip;
+      skipBtn.classList.remove('hidden');
+    } else {
+      skipBtn.classList.add('hidden');
+    }
+    chromeTop.style.opacity = step === 0 ? '0.85' : '1';
+  }
+
+  function resetChecks() {
+    const labels = [
+      'Phone motion lookback',
+      'Apple Health sleep',
+      'Quiz-seeded sleep need',
+      'Provisional debt',
+    ];
+    labels.forEach((t, i) => {
+      const dot = document.querySelector(`[data-check="${i}"]`);
+      const lab = document.querySelector(`[data-check-label="${i}"]`);
+      const row = document.querySelector(`[data-row="${i}"]`);
+      if (dot) dot.className = 'check-dot';
+      if (lab) { lab.className = 'check-label'; lab.textContent = t; }
+      if (row) row.classList.remove('lit');
+    });
+  }
+
+  function runAnalysis() {
+    analysisDone = false;
+    resetChecks();
+    ctaBtn.disabled = true;
+    ctaBtn.textContent = 'Reading…';
+    clearInterval(analysisTimer);
+    clearTimeout(autoTimer);
+
+    const outcomes = [
+      { state: 'ok', miss: false },
+      { state: 'miss', miss: true },
+      { state: 'ok', miss: false },
+      { state: 'ok', miss: false },
+    ];
+
+    let i = 0;
+    analysisTimer = setInterval(() => {
+      if (i >= outcomes.length) {
+        clearInterval(analysisTimer);
+        analysisDone = true;
+        ctaBtn.disabled = false;
+        ctaBtn.textContent = 'Continue';
+        return;
+      }
+      const dot = document.querySelector(`[data-check="${i}"]`);
+      const lab = document.querySelector(`[data-check-label="${i}"]`);
+      const row = document.querySelector(`[data-row="${i}"]`);
+      const o = outcomes[i];
+      if (row) row.classList.add('lit');
+      if (dot) dot.className = 'check-dot ' + o.state;
+      if (lab && o.miss) {
+        lab.className = 'check-label miss';
+        lab.textContent = lab.textContent + ' — none yet';
+      }
+      i += 1;
+    }, 380);
+
+    autoTimer = setTimeout(() => {
+      clearInterval(analysisTimer);
+      outcomes.forEach((o, idx) => {
+        const dot = document.querySelector(`[data-check="${idx}"]`);
+        const lab = document.querySelector(`[data-check-label="${idx}"]`);
+        const row = document.querySelector(`[data-row="${idx}"]`);
+        if (row) row.classList.add('lit');
+        if (dot) dot.className = 'check-dot ' + o.state;
+        if (lab && o.miss && !lab.textContent.includes('none yet')) {
+          lab.className = 'check-label miss';
+          lab.textContent = lab.textContent + ' — none yet';
+        }
+      });
+      analysisDone = true;
+      if (step === 8) goTo(9);
+    }, 2000);
+  }
+
+  function goTo(n) {
+    clearTimeout(autoTimer);
+    clearInterval(analysisTimer);
+    step = Math.max(0, Math.min(PHASES.length - 1, n));
+    showPanel(step);
+    renderProgress();
+    setChrome();
+    doneToast.classList.remove('show');
+    if (PHASES[step].analysis) runAnalysis();
+  }
+
+  function toast(msg) {
+    doneToast.textContent = msg;
+    doneToast.classList.add('show');
+    setTimeout(() => {
+      doneToast.classList.remove('show');
+      doneToast.textContent = 'Onboarding finished · mock only (no API)';
+    }, 2600);
+  }
+
+  function next() {
+    const p = PHASES[step];
+    if (p.analysis && !analysisDone) return;
+    if (p.finish) {
+      toast(selectedPlan === 'annual'
+        ? 'Started annual free trial · mock only'
+        : 'Started monthly · mock only');
+      return;
+    }
+    if (step < PHASES.length - 1) goTo(step + 1);
+  }
+
+  function skip() {
+    if (step === PHASES.length - 1) {
+      toast('Continue free with debt only · mock');
+      return;
+    }
+    goTo(step + 1);
+  }
+
+  ctaBtn.addEventListener('click', next);
+  skipBtn.addEventListener('click', skip);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') goTo(step - 1);
+  });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>
